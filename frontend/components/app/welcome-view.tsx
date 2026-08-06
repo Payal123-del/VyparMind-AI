@@ -41,6 +41,7 @@ export const WelcomeView = ({
           size="lg"
           onClick={onStartCall}
           className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
+          suppressHydrationWarning
         >
           {startButtonText}
         </Button>
