@@ -16,8 +16,19 @@ if (-not (Test-CommandExists "pnpm")) {
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Start each service in its own PowerShell window so logs remain visible.
-if (Test-CommandExists "livekit-server") {
+# Check if .env.local uses LiveKit Cloud
+$envFile = "$repoRoot\backend\.env.local"
+$isCloud = $false
+if (Test-Path $envFile) {
+  $content = Get-Content $envFile -Raw
+  if ($content -match "LIVEKIT_URL=.*livekit\.cloud") {
+    $isCloud = $true
+  }
+}
+
+if ($isCloud) {
+  Write-Host "Using LiveKit Cloud configured in .env.local. Skipping local livekit-server."
+} elseif (Test-CommandExists "livekit-server") {
   Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$repoRoot'; livekit-server --dev"
 } elseif (Test-Path "$repoRoot\livekit-server.exe") {
   Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$repoRoot'; .\livekit-server.exe --dev"
