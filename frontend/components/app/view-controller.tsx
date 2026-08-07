@@ -1,6 +1,7 @@
 'use client';
 
 import { useTheme } from 'next-themes';
+import { ConnectionState } from 'livekit-client';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSessionContext } from '@livekit/components-react';
 import type { AppConfig } from '@/app-config';
@@ -33,7 +34,8 @@ interface ViewControllerProps {
 }
 
 export function ViewController({ appConfig }: ViewControllerProps) {
-  const { isConnected, isConnecting, start } = useSessionContext();
+  const { isConnected, connectionState, start } = useSessionContext();
+  const isConnecting = connectionState === ConnectionState.Connecting;
   const { resolvedTheme } = useTheme();
 
   return (
