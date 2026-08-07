@@ -20,7 +20,8 @@ $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not (Test-Path "$repoRoot\backend\.venv")) {
   Write-Host "Setting up Python virtual environment in backend..."
   Set-Location "$repoRoot\backend"
-  uv sync
+  $env:UV_LINK_MODE = "copy"
+  uv sync --link-mode=copy
   Set-Location $repoRoot
 }
 
