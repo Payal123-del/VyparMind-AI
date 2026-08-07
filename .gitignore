@@ -1,6 +1,38 @@
+# Environment files
 .env
 .env.*
 !.env.example
+
+# OS & Editor files
 .DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+
+# Binaries & Executables
 livekit-server.exe
 *.exe
+*.dll
+*.so
+*.dylib
+
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.egg-info/
+
+# Build and Cache outputs
+.next/
+out/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

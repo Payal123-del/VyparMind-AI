@@ -63,20 +63,25 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         {styles && <style>{styles}</style>}
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
       </head>
-      <body className="overflow-x-hidden" suppressHydrationWarning>
+      <body
+        className="bg-background text-foreground min-h-svh overflow-x-hidden"
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <header className="fixed top-0 left-0 z-50 hidden w-full flex-row justify-between p-6 md:flex">
+          <header className="bg-background/50 fixed top-0 left-0 z-50 flex w-full items-center justify-between p-4 backdrop-blur-xs md:p-6">
             <a
               target="_blank"
               rel="noopener noreferrer"
               href="https://livekit.io"
-              className="scale-100 transition-transform duration-300 hover:scale-110"
+              aria-label="LiveKit Website"
+              className="scale-100 transition-transform duration-300 hover:scale-105"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
@@ -93,7 +98,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://docs.livekit.io/agents"
-                className="underline underline-offset-4"
+                aria-label="LiveKit Agents Documentation"
+                className="hover:text-primary underline underline-offset-4"
               >
                 LiveKit Agents
               </a>
@@ -101,8 +107,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           </header>
 
           {children}
-          <div className="group fixed bottom-0 left-1/2 z-50 mb-2 -translate-x-1/2">
-            <ThemeToggle className="translate-y-20 transition-transform delay-150 duration-300 group-hover:translate-y-0" />
+
+          <div className="group fixed bottom-2 left-1/2 z-50 -translate-x-1/2 sm:bottom-4">
+            <ThemeToggle className="transition-transform delay-150 duration-300 sm:translate-y-20 sm:group-hover:translate-y-0" />
           </div>
         </ThemeProvider>
       </body>

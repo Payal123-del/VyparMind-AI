@@ -23,7 +23,7 @@ const VIEW_MOTION_PROPS = {
   animate: 'visible',
   exit: 'hidden',
   transition: {
-    duration: 0.5,
+    duration: 0.4,
     ease: 'linear',
   },
 };
@@ -33,7 +33,7 @@ interface ViewControllerProps {
 }
 
 export function ViewController({ appConfig }: ViewControllerProps) {
-  const { isConnected, start } = useSessionContext();
+  const { isConnected, isConnecting, start } = useSessionContext();
   const { resolvedTheme } = useTheme();
 
   return (
@@ -45,6 +45,7 @@ export function ViewController({ appConfig }: ViewControllerProps) {
           {...VIEW_MOTION_PROPS}
           startButtonText={appConfig.startButtonText}
           onStartCall={start}
+          isConnecting={isConnecting}
         />
       )}
       {/* Session view */}

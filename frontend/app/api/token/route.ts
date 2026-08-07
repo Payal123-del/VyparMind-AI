@@ -9,25 +9,34 @@ type ConnectionDetails = {
   participantToken: string;
 };
 
-// NOTE: you are expected to define the following environment variables in `.env.local`:
+// NOTE: define the environment variables in `.env.local`:
 const API_KEY = process.env.LIVEKIT_API_KEY;
 const API_SECRET = process.env.LIVEKIT_API_SECRET;
 const LIVEKIT_URL = process.env.LIVEKIT_URL;
 const AGENT_NAME = process.env.AGENT_NAME;
 
-// don't cache the results
+// Don't cache token route results
 export const revalidate = 0;
 
 export async function POST(req: Request) {
   try {
-    if (LIVEKIT_URL === undefined) {
-      throw new Error('LIVEKIT_URL is not defined');
+    if (!LIVEKIT_URL) {
+      return NextResponse.json(
+        { error: 'LIVEKIT_URL environment variable is missing' },
+        { status: 500 }
+      );
     }
-    if (API_KEY === undefined) {
-      throw new Error('LIVEKIT_API_KEY is not defined');
+    if (!API_KEY) {
+      return NextResponse.json(
+        { error: 'LIVEKIT_API_KEY environment variable is missing' },
+        { status: 500 }
+      );
     }
-    if (API_SECRET === undefined) {
-      throw new Error('LIVEKIT_API_SECRET is not defined');
+    if (!API_SECRET) {
+      return NextResponse.json(
+        { error: 'LIVEKIT_API_SECRET environment variable is missing' },
+        { status: 500 }
+      );
     }
 
     // Parse room config from request body (if provided).
@@ -43,7 +52,7 @@ export async function POST(req: Request) {
         { ignoreUnknownFields: true }
       );
     }
-      
+
     // Generate participant token
     const participantName = 'user';
     const participantIdentity = `voice_assistant_user_${Math.floor(Math.random() * 10_000)}`;
@@ -67,10 +76,9 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(data, { headers });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      return new NextResponse(error.message, { status: 500 });
-    }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown internal server error';
+    console.error('[API /api/token]', error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 

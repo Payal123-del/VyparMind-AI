@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "backend/pyproject.toml"
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          uv sync
+
+      - name: Run Ruff check & format
+        run: |
+          cd backend
+          uv run ruff check .
+          uv run ruff format --check .
+
+  frontend-lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          pnpm install --frozen-lockfile
+
+      - name: Check code formatting
+        run: |
+          cd frontend
+          pnpm format:check
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          pnpm lint
+
+      - name: Build Next.js app
+        run: |
+          cd frontend
+          pnpm build
+        env:
+          NEXT_PUBLIC_CONN_DETAILS_ENDPOINT: ""

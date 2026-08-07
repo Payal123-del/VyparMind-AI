@@ -7,14 +7,30 @@ function Test-CommandExists {
 }
 
 if (-not (Test-CommandExists "uv")) {
-  Write-Error "Missing required command: uv"
+  Write-Error "Missing required command: uv. Please install uv (https://docs.astral.sh/uv/)."
 }
 
 if (-not (Test-CommandExists "pnpm")) {
-  Write-Error "Missing required command: pnpm"
+  Write-Error "Missing required command: pnpm. Please install pnpm (https://pnpm.io/installation)."
 }
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+# Ensure backend dependencies are synced
+if (-not (Test-Path "$repoRoot\backend\.venv")) {
+  Write-Host "Setting up Python virtual environment in backend..."
+  Set-Location "$repoRoot\backend"
+  uv sync
+  Set-Location $repoRoot
+}
+
+# Ensure frontend dependencies are installed
+if (-not (Test-Path "$repoRoot\frontend\node_modules")) {
+  Write-Host "Installing frontend node dependencies..."
+  Set-Location "$repoRoot\frontend"
+  pnpm install
+  Set-Location $repoRoot
+}
 
 # Check if .env.local uses LiveKit Cloud
 $envFile = "$repoRoot\backend\.env.local"
