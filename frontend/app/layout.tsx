@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   const hdrs = await headers();
   const appConfig = await getAppConfig(hdrs);
   const styles = getStyles(appConfig);
-  const { pageTitle, pageDescription, companyName, logo, logoDark } = appConfig;
+  const { pageTitle, pageDescription } = appConfig;
 
   return (
     <html
@@ -56,7 +56,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       className={cn(
         publicSans.variable,
         commitMono.variable,
-        'scroll-smooth font-sans antialiased'
+        'dark scroll-smooth font-sans antialiased'
       )}
     >
       <head>
@@ -66,51 +66,16 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
       </head>
       <body
-        className="bg-background text-foreground min-h-svh overflow-x-hidden"
+        className="bg-[#0B0F17] text-slate-100 min-h-svh overflow-x-hidden selection:bg-purple-600 selection:text-white"
         suppressHydrationWarning
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <header className="bg-background/50 fixed top-0 left-0 z-50 flex w-full items-center justify-between p-4 backdrop-blur-xs md:p-6">
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://livekit.io"
-              aria-label="LiveKit Website"
-              className="scale-100 transition-transform duration-300 hover:scale-105"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={logoDark ?? logo}
-                alt={`${companyName} Logo`}
-                className="hidden size-6 dark:block"
-              />
-            </a>
-            <span className="text-foreground font-mono text-xs font-bold tracking-wider uppercase">
-              Built with{' '}
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://docs.livekit.io/agents"
-                aria-label="LiveKit Agents Documentation"
-                className="hover:text-primary underline underline-offset-4"
-              >
-                LiveKit Agents
-              </a>
-            </span>
-          </header>
-
           {children}
-
-          <div className="group fixed bottom-2 left-1/2 z-50 -translate-x-1/2 sm:bottom-4">
-            <ThemeToggle className="transition-transform delay-150 duration-300 sm:translate-y-20 sm:group-hover:translate-y-0" />
-          </div>
         </ThemeProvider>
       </body>
     </html>

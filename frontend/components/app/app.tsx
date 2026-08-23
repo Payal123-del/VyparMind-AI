@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { TokenSource } from 'livekit-client';
-import { useSession } from '@livekit/components-react';
+import { useSession, RoomAudioRenderer } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
 import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
@@ -12,6 +12,8 @@ import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
 import { getSandboxTokenSource } from '@/lib/utils';
+
+import { DashboardView } from '@/components/app/dashboard-view';
 
 const IN_DEVELOPMENT = process.env.NODE_ENV !== 'production';
 
@@ -41,9 +43,8 @@ export function App({ appConfig }: AppProps) {
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
-      <main className="grid h-svh grid-cols-1 place-content-center">
-        <ViewController appConfig={appConfig} />
-      </main>
+      <RoomAudioRenderer />
+      <DashboardView appConfig={appConfig} />
       <StartAudioButton label="Start Audio" />
       <Toaster
         icons={{

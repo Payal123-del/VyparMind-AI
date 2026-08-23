@@ -231,7 +231,7 @@ async def test_multiturn_conversation() -> None:
 
         # Turn 1: Normal question
         result1 = await session.run(
-            user_input="What features does Nova Tech cloud storage offer?"
+            user_input="What features does VyaparMind AI commerce solutions offer?"
         )
         await (
             result1.expect.next_event()

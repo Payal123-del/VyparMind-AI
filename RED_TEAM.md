@@ -1,6 +1,6 @@
 # Day 2 Red Team Evaluation Report
 
-This document records 10 red-teaming test scenarios evaluated against the **Nova Tech Customer Support Voice Agent (Anisha)** to verify system prompt guardrails, language handling, refusal policies, and escalation logic.
+This document records 10 red-teaming test scenarios evaluated against the **VyaparMind AI Autonomous Commerce Copilot (Anisha)** to verify system prompt guardrails, language handling, refusal policies, and escalation logic.
 
 ---
 
