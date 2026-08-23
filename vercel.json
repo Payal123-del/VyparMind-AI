@@ -1,6 +1,7 @@
 {
-  "installCommand": "pnpm --prefix frontend install",
-  "buildCommand": "pnpm --prefix frontend build",
-  "outputDirectory": "frontend/.next",
-  "framework": "nextjs"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "cd frontend && pnpm install",
+  "buildCommand": "cd frontend && pnpm build",
+  "outputDirectory": "frontend/.next"
 }
