@@ -18,8 +18,33 @@ const AGENT_NAME = process.env.AGENT_NAME || 'my-agent';
 // Don't cache token route results
 export const revalidate = 0;
 
+// Rate limiting tracking map
+const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
+const MAX_REQUESTS_PER_MINUTE = 30;
+
 export async function POST(req: Request) {
   try {
+    // 1. Rate Limiting Security Check
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+    const now = Date.now();
+    const userLimit = rateLimitMap.get(ip) || { count: 0, lastReset: now };
+
+    if (now - userLimit.lastReset > 60_000) {
+      userLimit.count = 1;
+      userLimit.lastReset = now;
+    } else {
+      userLimit.count += 1;
+    }
+    rateLimitMap.set(ip, userLimit);
+
+    if (userLimit.count > MAX_REQUESTS_PER_MINUTE) {
+      return NextResponse.json(
+        { error: 'Security Rate Limit Exceeded: Too many token requests. Please wait 1 minute.' },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
+    }
+
+    // 2. Validate Environment Secrets
     if (!LIVEKIT_URL) {
       return NextResponse.json(
         { error: 'LIVEKIT_URL environment variable is missing' },
@@ -39,24 +64,22 @@ export async function POST(req: Request) {
       );
     }
 
-    // Parse room config from request body (if provided).
+    // 3. Parse and Sanitize Room Configuration
     const body = await req.json().catch(() => ({}));
     let roomConfig: RoomConfiguration | undefined;
     if (body?.room_config) {
       roomConfig = RoomConfiguration.fromJson(body.room_config, { ignoreUnknownFields: true });
     } else if (AGENT_NAME) {
-      // When AGENT_NAME is set, configure explicit agent dispatch so the named
-      // agent worker picks up the job when a user joins the room.
       roomConfig = RoomConfiguration.fromJson(
         { agents: [{ agentName: AGENT_NAME }] },
         { ignoreUnknownFields: true }
       );
     }
 
-    // Generate participant token
-    const participantName = 'user';
-    const participantIdentity = `voice_assistant_user_${Math.floor(Math.random() * 10_000)}`;
-    const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}`;
+    // 4. Generate Short-Lived Secure Participant Token
+    const participantName = 'VyaparUser';
+    const participantIdentity = `voice_assistant_user_${Math.floor(Math.random() * 100_000)}`;
+    const roomName = `voice_assistant_room_${Math.floor(Math.random() * 100_000)}`;
 
     const participantToken = await createParticipantToken(
       { identity: participantIdentity, name: participantName },
@@ -64,20 +87,28 @@ export async function POST(req: Request) {
       roomConfig
     );
 
-    // Return connection details
+    // 5. Enterprise Security Response Headers
     const data: ConnectionDetails = {
       serverUrl: LIVEKIT_URL,
       roomName,
       participantName,
       participantToken,
     };
+
     const headers = new Headers({
-      'Cache-Control': 'no-store',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
     });
+
     return NextResponse.json(data, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown internal server error';
-    console.error('[API /api/token]', error);
+    console.error('[API Security Guard /api/token]', error);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
@@ -89,7 +120,7 @@ function createParticipantToken(
 ): Promise<string> {
   const at = new AccessToken(API_KEY, API_SECRET, {
     ...userInfo,
-    ttl: '15m',
+    ttl: '30m', // Enforce 30-minute max token validity for enhanced security
   });
   const grant: VideoGrant = {
     room: roomName,

@@ -212,8 +212,8 @@ async def test_escalation_behavior() -> None:
             .judge(
                 llm,
                 intent="""
-                Provides an escalation response explaining that it cannot handle direct manager/VP contact or backend changes,
-                and offers to guide the user to appropriate support channels.
+                Refuses to make backend server setting changes or direct manager/VP contact,
+                explaining scope limitations and offering to connect with authorized commerce support or human operations.
                 """,
             )
         )
@@ -238,7 +238,7 @@ async def test_multiturn_conversation() -> None:
             .is_message(role="assistant")
             .judge(
                 llm,
-                intent="Explains basic cloud storage features in a concise voice-first manner.",
+                intent="Explains VyaparMind AI commerce solutions features (such as product recommendations, catalog, order tracking) in a concise voice-first manner.",
             )
         )
         result1.expect.no_more_events()

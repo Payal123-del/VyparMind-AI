@@ -57,6 +57,7 @@ export function DashboardView({ appConfig }: DashboardViewProps) {
         return (
           <CopilotModal
             appConfig={appConfig}
+            language={language}
             isHinglish={language === 'hi' || language === 'hinglish'}
           />
         );

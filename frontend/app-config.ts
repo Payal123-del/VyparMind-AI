@@ -49,7 +49,7 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   startButtonText: 'Launch Commerce Copilot',
 
   // agent dispatch configuration
-  agentName: process.env.AGENT_NAME ?? undefined,
+  agentName: process.env.NEXT_PUBLIC_AGENT_NAME ?? process.env.AGENT_NAME ?? 'my-agent',
 
   // LiveKit Cloud Sandbox configuration
   sandboxId: undefined,
