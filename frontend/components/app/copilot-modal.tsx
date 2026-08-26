@@ -153,6 +153,9 @@ export function CopilotModal({
   const [textInput, setTextInput] = useState<string>('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const isAgentSpeakingRef = useRef<boolean>(false);
+  const lastSpokenResponseRef = useRef<string>('');
+  const isListeningMicRef = useRef<boolean>(false);
 
   const samplePrompts = MULTI_LANG_PROMPTS[language] || MULTI_LANG_PROMPTS.hinglish;
 
@@ -279,7 +282,7 @@ export function CopilotModal({
     return nonMale || voices[0];
   };
 
-  // Ultra-Fast Spoken Audio Synthesizer with Guaranteed Female Voice & Immediate Auto-Reset
+  // Ultra-Fast Spoken Audio Synthesizer with Guaranteed Female Voice & Acoustic Echo Guard
   const speakAudioResponse = (textToSpeak: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       setAssistantState('LISTENING');
@@ -288,6 +291,13 @@ export function CopilotModal({
 
     try {
       window.speechSynthesis.cancel(); // Stop active speech immediately
+
+      // Acoustic Echo Guard: Mark agent as speaking and temporarily mute mic input
+      isAgentSpeakingRef.current = true;
+      lastSpokenResponseRef.current = textToSpeak;
+      if (recognitionRef.current && isListeningMicRef.current) {
+        try { recognitionRef.current.abort(); } catch (e) {}
+      }
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.rate = 1.05; // Fast responsive pitch & speed
@@ -299,31 +309,44 @@ export function CopilotModal({
         utterance.voice = femaleVoice;
       }
 
+      const finishSpeech = () => {
+        setAssistantState('LISTENING');
+        // Cooldown buffer (700ms) to allow room audio reverb to subside before re-enabling mic
+        setTimeout(() => {
+          isAgentSpeakingRef.current = false;
+          if (recognitionRef.current && isListeningMicRef.current) {
+            try { recognitionRef.current.start(); } catch (e) {}
+          }
+        }, 700);
+      };
+
       // Auto-reset timer: Guaranteed return to LISTENING state after speech duration
       const maxSpeechMs = Math.min(Math.max(textToSpeak.length * 60, 2000), 8000);
       const safetyTimer = setTimeout(() => {
-        setAssistantState('LISTENING');
+        finishSpeech();
       }, maxSpeechMs);
 
       utterance.onstart = () => {
+        isAgentSpeakingRef.current = true;
         setAssistantState('SPEAKING');
         setVoiceErrorText('');
       };
 
       utterance.onend = () => {
         clearTimeout(safetyTimer);
-        setAssistantState('LISTENING');
+        finishSpeech();
       };
 
       utterance.onerror = (e) => {
         clearTimeout(safetyTimer);
         setVoiceErrorText('Audio note: Written transcript available below.');
-        setAssistantState('LISTENING');
+        finishSpeech();
       };
 
       window.speechSynthesis.speak(utterance);
     } catch (err) {
       console.error('Audio synthesis exception:', err);
+      isAgentSpeakingRef.current = false;
       setAssistantState('LISTENING');
     }
   };
@@ -632,31 +655,57 @@ export function CopilotModal({
       recognition.lang = language === 'hi' ? 'hi-IN' : language === 'hinglish' ? 'hi-IN' : 'en-US';
 
       recognition.onresult = (event: any) => {
+        // Acoustic Echo Guard 1: Ignore input if Anisha is currently speaking or in cooldown
+        if (isAgentSpeakingRef.current) {
+          return;
+        }
+
         const lastResultIndex = event.results.length - 1;
         const rawSpeech = event.results[lastResultIndex][0].transcript;
         const spokenText = sanitizeInput(rawSpeech);
-        if (spokenText) {
-          const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          const userSpeechMsg: ChatMessage = {
-            id: `user_speech_${Date.now()}`,
-            sender: 'user',
-            text: `🎙️ "${spokenText}"`,
-            timestamp: timeStr,
-          };
-          setChatMessages((prev) => [...prev, userSpeechMsg]);
 
-          const matchedResponse = generateResponseForCustomInput(spokenText);
-          triggerTypewriterText(matchedResponse, spokenText);
+        if (!spokenText || spokenText.length < 2) return;
+
+        // Acoustic Echo Guard 2: Ignore echo if spoken text matches fragments of Anisha's last response
+        const lastAns = (lastSpokenResponseRef.current || '').toLowerCase();
+        const spokenLower = spokenText.toLowerCase();
+        if (lastAns && spokenLower.length > 4 && lastAns.includes(spokenLower)) {
+          return; // Skip room speaker echo
         }
+
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const userSpeechMsg: ChatMessage = {
+          id: `user_speech_${Date.now()}`,
+          sender: 'user',
+          text: `🎙️ "${spokenText}"`,
+          timestamp: timeStr,
+        };
+        setChatMessages((prev) => [...prev, userSpeechMsg]);
+
+        const matchedResponse = generateResponseForCustomInput(spokenText);
+        triggerTypewriterText(matchedResponse, spokenText);
       };
 
       recognition.onerror = (err: any) => {
         console.warn('Browser SpeechRecognition warning:', err);
-        setIsListeningMic(false);
+        if (err.error !== 'no-speech' && err.error !== 'aborted') {
+          setIsListeningMic(false);
+          isListeningMicRef.current = false;
+        }
       };
 
       recognition.onend = () => {
-        setIsListeningMic(false);
+        // Auto-restart recognition if mic is toggled ON and agent is not speaking
+        if (isListeningMicRef.current && !isAgentSpeakingRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            setIsListeningMic(false);
+            isListeningMicRef.current = false;
+          }
+        } else if (!isListeningMicRef.current) {
+          setIsListeningMic(false);
+        }
       };
 
       recognitionRef.current = recognition;
@@ -668,14 +717,17 @@ export function CopilotModal({
   const toggleMicListening = () => {
     if (!recognitionRef.current) return;
     if (isListeningMic) {
+      isListeningMicRef.current = false;
       try { recognitionRef.current.stop(); } catch (e) {}
       setIsListeningMic(false);
     } else {
       try {
+        isListeningMicRef.current = true;
         recognitionRef.current.start();
         setIsListeningMic(true);
       } catch (e) {
         console.warn('Mic start exception:', e);
+        isListeningMicRef.current = false;
       }
     }
   };
