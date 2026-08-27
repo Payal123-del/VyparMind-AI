@@ -121,3 +121,4 @@ chmod +x start_app.sh
 - [x] Customer Intelligence & LTV Context Matrix
 - [ ] Autonomous WhatsApp / SMS Checkout Link Dispatch
 - [ ] Real-time Multi-vendor ERP Inventory Sync
+# live link:https://vypar-mind.vercel.app/
