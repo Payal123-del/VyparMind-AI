@@ -10,6 +10,9 @@ import {
   AlertTriangle,
   Activity,
   Shield,
+  Sliders,
+  CreditCard,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +31,10 @@ interface AgentConfig {
 }
 
 export function AgentControlCenter() {
+  const [maxPaymentBound, setMaxPaymentBound] = useState<number>(25000);
+  const [maxDiscountPercent, setMaxDiscountPercent] = useState<number>(15);
+  const [maxRetries, setMaxRetries] = useState<number>(2);
+
   const [agents, setAgents] = useState<AgentConfig[]>([
     {
       id: 'AGENT-01',
@@ -40,6 +47,19 @@ export function AgentControlCenter() {
       successRate: '94.2%',
       revenueInfluenced: '₹3,42,800',
       escalationRate: '3.1%',
+      languageCapabilities: ['Hinglish', 'English', 'Hindi'],
+    },
+    {
+      id: 'AGENT-BUYER',
+      name: 'AI Buyer Agent',
+      role: 'Buyer Intent & Checkout Orchestrator',
+      status: 'ACTIVE',
+      purpose: 'Understands buyer requirements, verifies catalog specs, confirms final amount, and orchestrates policy-gated Razorpay Test checkouts.',
+      currentTask: 'Awaiting customer confirmation for ₹15,498 bundle checkout',
+      conversationsHandled: 640,
+      successRate: '96.5%',
+      revenueInfluenced: '₹2,84,000',
+      escalationRate: '1.2%',
       languageCapabilities: ['Hinglish', 'English', 'Hindi'],
     },
     {
@@ -96,16 +116,68 @@ export function AgentControlCenter() {
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold border border-purple-500/40">
-            Autonomous Fleet
-          </span>
-          <h2 className="text-xl font-bold tracking-tight text-white">AI Agent Control Center</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold border border-purple-500/40">
+              Multi-Agent Fleet
+            </span>
+            <h2 className="text-xl font-bold tracking-tight text-white">AI Agent Control Center</h2>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Monitor and configure your autonomous commerce growth agents, execution policies, and live performance metrics
+          </p>
         </div>
-        <p className="text-xs text-slate-400 mt-1">
-          Monitor and manage your autonomous commerce growth agents, execution parameters, and performance stats
-        </p>
+
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+          <Shield className="size-4 text-emerald-400" />
+          <span>Active Policy Guard: <strong>Zero Hallucination</strong></span>
+        </div>
+      </div>
+
+      {/* Centralized Policy Engine Bounds Card */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4 shadow-lg backdrop-blur-sm">
+        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div className="flex items-center gap-2 text-white font-bold text-sm">
+            <Sliders className="size-4 text-purple-400" />
+            <span>Agent Action Policy Bounds & Guardrails</span>
+          </div>
+          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
+            ENFORCED SERVER-SIDE
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-slate-400">
+              <span>Max Agent Payment Bound:</span>
+              <strong className="text-white font-mono">₹{maxPaymentBound.toLocaleString('en-IN')}</strong>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Transactions exceeding ₹{maxPaymentBound.toLocaleString('en-IN')} strictly require merchant approval.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-slate-400">
+              <span>Max Allowed Discount:</span>
+              <strong className="text-white font-mono">{maxDiscountPercent}%</strong>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Agents cannot grant discounts above {maxDiscountPercent}% under any circumstances.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-slate-400">
+              <span>Max Retry Attempts:</span>
+              <strong className="text-white font-mono">{maxRetries} Retries</strong>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Prevents looping checkout attempts and duplicate card charging.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Grid of Agents */}
@@ -124,6 +196,7 @@ export function AgentControlCenter() {
             >
               {/* Agent Title & Status */}
               <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
                   {agent.id === 'AGENT-01' ? (
                     <div className="relative size-11 rounded-xl overflow-hidden border border-purple-500 shadow-md shadow-purple-500/20 shrink-0">
                       <img
@@ -131,6 +204,10 @@ export function AgentControlCenter() {
                         alt="Anisha AI Avatar"
                         className="size-full object-cover"
                       />
+                    </div>
+                  ) : agent.id === 'AGENT-BUYER' ? (
+                    <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-950/80 border border-indigo-800/60 text-indigo-400 shrink-0">
+                      <CreditCard className="size-5" />
                     </div>
                   ) : (
                     <div className="flex size-10 items-center justify-center rounded-xl bg-purple-950/80 border border-purple-800/60 text-purple-400 shrink-0">
@@ -141,6 +218,7 @@ export function AgentControlCenter() {
                     <h3 className="text-base font-bold text-white">{agent.name}</h3>
                     <p className="text-xs font-medium text-slate-400">{agent.role}</p>
                   </div>
+                </div>
 
                 <Button
                   size="sm"

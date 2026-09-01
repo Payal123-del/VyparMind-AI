@@ -10,6 +10,8 @@ export interface Dictionary {
   navGrowthAutomations: string;
   navCopilotRoom: string;
   navZeroHallucination: string;
+  navAuditTrail: string;
+  navJudgeDemo: string;
 
   // Header & General
   searchPlaceholder: string;
@@ -70,6 +72,8 @@ export const TRANSLATIONS: Record<LanguageMode, Dictionary> = {
     navGrowthAutomations: 'Growth Automations',
     navCopilotRoom: 'AI Copilot Room',
     navZeroHallucination: 'Zero-Hallucination Guard',
+    navAuditTrail: 'Agent Audit Trail',
+    navJudgeDemo: 'Judge Demo Mode',
 
     searchPlaceholder: 'Search opportunities, products, intents...',
     engineActive: 'AI Engine Active',
@@ -125,6 +129,8 @@ export const TRANSLATIONS: Record<LanguageMode, Dictionary> = {
     navGrowthAutomations: 'विकास स्वचालन (Automations)',
     navCopilotRoom: 'AI वॉयस सहायक कक्ष',
     navZeroHallucination: 'शून्य-भ्रम सुरक्षा गार्ड',
+    navAuditTrail: 'एजेंट ऑडिट ट्रेल',
+    navJudgeDemo: 'जज डेमो मोड',
 
     searchPlaceholder: 'उत्पाद, ग्राहक इरादे, अवसर खोजें...',
     engineActive: 'AI इंजन सक्रिय',
@@ -180,6 +186,8 @@ export const TRANSLATIONS: Record<LanguageMode, Dictionary> = {
     navGrowthAutomations: 'Growth Automations',
     navCopilotRoom: 'AI Copilot Room',
     navZeroHallucination: 'Zero-Hallucination Guard',
+    navAuditTrail: 'Agent Audit Trail',
+    navJudgeDemo: 'Judge Demo Mode ⚡',
 
     searchPlaceholder: 'Search opportunities, products, intent...',
     engineActive: 'AI Engine Active',

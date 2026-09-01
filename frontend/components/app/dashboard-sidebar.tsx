@@ -9,6 +9,9 @@ import {
   Zap,
   Mic,
   ShieldCheck,
+  Flame,
+  ListFilter,
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 import { LanguageMode, TRANSLATIONS } from '@/lib/translations';
@@ -20,7 +23,8 @@ export type DashboardTab =
   | 'customers'
   | 'agents'
   | 'automations'
-  | 'analytics'
+  | 'audit'
+  | 'judge-demo'
   | 'copilot';
 
 interface DashboardSidebarProps {
@@ -43,6 +47,13 @@ export function DashboardSidebar({
       id: 'overview' as DashboardTab,
       label: t.navExecutiveOverview,
       icon: LayoutDashboard,
+    },
+    {
+      id: 'judge-demo' as DashboardTab,
+      label: t.navJudgeDemo,
+      icon: Flame,
+      badge: 'Judge Flow',
+      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse',
     },
     {
       id: 'catalogue' as DashboardTab,
@@ -74,10 +85,17 @@ export function DashboardSidebar({
       icon: Zap,
     },
     {
+      id: 'audit' as DashboardTab,
+      label: t.navAuditTrail,
+      icon: Activity,
+      badge: 'Live',
+      badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    },
+    {
       id: 'copilot' as DashboardTab,
       label: t.navCopilotRoom,
       icon: Mic,
-      badge: 'Live',
+      badge: 'Voice',
       badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     },
   ];

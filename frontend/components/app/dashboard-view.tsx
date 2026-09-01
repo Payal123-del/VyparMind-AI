@@ -12,6 +12,8 @@ import { CustomerIntelligence } from '@/components/app/customer-intelligence';
 import { AgentControlCenter } from '@/components/app/agent-control-center';
 import { GrowthAutomations } from '@/components/app/growth-automations';
 import { CopilotModal } from '@/components/app/copilot-modal';
+import { AuditTrailView } from '@/components/app/audit-trail-view';
+import { JudgeDemoView } from '@/components/app/judge-demo-view';
 import { LanguageMode } from '@/lib/translations';
 
 interface DashboardViewProps {
@@ -34,9 +36,12 @@ export function DashboardView({ appConfig }: DashboardViewProps) {
           <ExecutiveOverview
             onOpenOpportunityCenter={() => setActiveTab('opportunities')}
             onOpenCopilot={() => setActiveTab('copilot')}
+            onOpenJudgeDemo={() => setActiveTab('judge-demo')}
             isHinglish={language === 'hi' || language === 'hinglish'}
           />
         );
+      case 'judge-demo':
+        return <JudgeDemoView onNavigateToTab={(tab) => setActiveTab(tab as DashboardTab)} />;
       case 'catalogue':
         return (
           <ProductCatalogue
@@ -52,6 +57,8 @@ export function DashboardView({ appConfig }: DashboardViewProps) {
         return <AgentControlCenter />;
       case 'automations':
         return <GrowthAutomations />;
+      case 'audit':
+        return <AuditTrailView />;
       case 'copilot':
       default:
         return (
@@ -68,6 +75,7 @@ export function DashboardView({ appConfig }: DashboardViewProps) {
     <div className="flex min-h-screen flex-col bg-[#0B0F17] text-slate-100 font-sans">
       <DashboardHeader
         onOpenCopilot={() => setActiveTab('copilot')}
+        onOpenJudgeDemo={() => setActiveTab('judge-demo')}
         isConnected={isConnected}
         language={language}
         onLanguageChange={setLanguage}

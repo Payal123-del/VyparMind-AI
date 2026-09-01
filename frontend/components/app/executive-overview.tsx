@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   TrendingUp,
   ArrowUpRight,
@@ -11,80 +12,119 @@ import {
   Sparkles,
   MessageSquare,
   Quote,
+  Flame,
+  CreditCard,
+  Layers,
+  Activity,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  revenueAttributionService,
+  type AttributionMetrics,
+  type TransactionRecord,
+} from '@/lib/commerce/revenue-attribution';
 
 interface ExecutiveOverviewProps {
   onOpenOpportunityCenter: () => void;
   onOpenCopilot: () => void;
+  onOpenJudgeDemo?: () => void;
   isHinglish?: boolean;
 }
 
 export function ExecutiveOverview({
   onOpenOpportunityCenter,
   onOpenCopilot,
+  onOpenJudgeDemo,
   isHinglish = false,
 }: ExecutiveOverviewProps) {
+  const [metricsData, setMetricsData] = useState<AttributionMetrics>(
+    revenueAttributionService.getMetrics()
+  );
+  const [recentTxns, setRecentTxns] = useState<TransactionRecord[]>(
+    revenueAttributionService.getRecentTransactions()
+  );
+
+  useEffect(() => {
+    const unsubscribe = revenueAttributionService.subscribe((metrics, txns) => {
+      setMetricsData(metrics);
+      setRecentTxns(txns);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const metrics = [
     {
-      title: isHinglish ? 'Total Influenced Kamai' : 'Revenue Influenced',
-      value: '₹4,85,200',
+      title: isHinglish ? 'Total Influenced Kamai' : 'Gross Revenue',
+      value: `₹${metricsData.grossRevenue.toLocaleString('en-IN')}`,
       change: '+24.2%',
       isPositive: true,
-      description: isHinglish ? 'AI Voice aur Chat se generated sales' : 'AI-assisted conversions & recommendations',
+      description: isHinglish
+        ? 'AI Voice aur Chat se generated sales'
+        : 'Total conversational & store sales volume',
       icon: DollarSign,
       color: 'text-purple-400',
       bg: 'bg-purple-500/10 border-purple-500/20',
     },
     {
-      title: isHinglish ? 'AI Conversion Rate' : 'AI Conversion Rate',
-      value: '28.4%',
-      change: '+4.8%',
+      title: isHinglish ? 'AI Direct Checkout Kamai' : 'AI Direct Revenue',
+      value: `₹${metricsData.aiDirectRevenue.toLocaleString('en-IN')}`,
+      change: '+31.8%',
       isPositive: true,
-      description: isHinglish ? 'Customer baatchaat se direct khareedi ratio' : 'Conversational intent to purchase ratio',
-      icon: TrendingUp,
+      description: isHinglish
+        ? 'Autonomous AI Buyer & Copilot checkout sales'
+        : 'Direct revenue converted via AI agent checkouts',
+      icon: Zap,
       color: 'text-indigo-400',
       bg: 'bg-indigo-500/10 border-indigo-500/20',
     },
     {
       title: isHinglish ? 'AI Assisted Orders' : 'AI Assisted Orders',
-      value: '1,420',
+      value: metricsData.assistedOrdersCount.toLocaleString('en-IN'),
       change: '+18.5%',
       isPositive: true,
-      description: isHinglish ? 'AI Copilot se final hue orders' : 'Orders finalized with AI Copilot',
+      description: isHinglish
+        ? 'AI Copilot aur Agent se final hue orders'
+        : 'Orders finalized with AI Copilot & Agents',
       icon: ShoppingCart,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10 border-emerald-500/20',
     },
     {
-      title: isHinglish ? 'High Intent Leads' : 'Qualified Opportunities',
-      value: '312',
-      change: '+32 new today',
+      title: isHinglish ? 'Recovered Lost Revenue' : 'Recovered Revenue',
+      value: `₹${metricsData.recoveredRevenue.toLocaleString('en-IN')}`,
+      change: '+15.2%',
       isPositive: true,
-      description: isHinglish ? 'Taza khareeddar leads ready for action' : 'High-intent leads flagged for action',
-      icon: Target,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10 border-amber-500/20',
+      description: isHinglish
+        ? 'Chhute hue customer inquiries se wapas mili kamai'
+        : 'Recovered from abandoned inquiries via Recovery Agent',
+      icon: CheckCircle2,
+      color: 'text-pink-400',
+      bg: 'bg-pink-500/10 border-pink-500/20',
     },
     {
-      title: isHinglish ? 'Customer Intent Score' : 'Customer Intent Score',
-      value: '94 / 100',
-      change: 'High Intent',
+      title: isHinglish ? 'Upsell & Cross-Sell Kamai' : 'Upsell / Cross-Sell Revenue',
+      value: `₹${metricsData.upsellRevenue.toLocaleString('en-IN')}`,
+      change: '+22.4%',
       isPositive: true,
-      description: isHinglish ? 'Customer ki khareedne ki ichha score' : 'Average intent classification metric',
-      icon: Zap,
+      description: isHinglish
+        ? 'Compatible accessories aur bundle recommendations'
+        : 'Incremental value from intelligent accessory bundling',
+      icon: TrendingUp,
       color: 'text-cyan-400',
       bg: 'bg-cyan-500/10 border-cyan-500/20',
     },
     {
-      title: isHinglish ? 'Recovered Lost Revenue' : 'Revenue Recovered',
-      value: '₹1,12,400',
-      change: '+15.2%',
+      title: isHinglish ? 'Razorpay Test Transactions' : 'Razorpay Test Volume',
+      value: `₹${metricsData.razorpayTestVolume.toLocaleString('en-IN')}`,
+      change: `${metricsData.razorpayTestTransactionsCount} test orders`,
       isPositive: true,
-      description: isHinglish ? 'Chhute hue customer inquiries se wapas mili kamai' : 'Recovered from abandoned inquiries',
-      icon: CheckCircle2,
-      color: 'text-pink-400',
-      bg: 'bg-pink-500/10 border-pink-500/20',
+      description: isHinglish
+        ? 'Verified Razorpay Test Mode transactions'
+        : 'Verified Razorpay Test Mode settlements',
+      icon: CreditCard,
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10 border-blue-500/20',
     },
   ];
 
@@ -95,9 +135,9 @@ export function ExecutiveOverview({
       intent: isHinglish ? 'High Intent — Sub-15k 5G Phone Inquiry' : 'High Intent — Smartphone < ₹15k',
       language: 'Hinglish',
       agent: 'Commerce Growth Agent (Anisha)',
-      value: '₹14,999',
-      status: isHinglish ? 'Ready to Purchase' : 'Qualified Opportunity',
-      time: '3 mins ago',
+      value: '₹15,498',
+      status: isHinglish ? 'Razorpay Paid' : 'Razorpay Verified',
+      time: 'Just now',
     },
     {
       id: 'CONV-9401',
@@ -105,8 +145,8 @@ export function ExecutiveOverview({
       intent: isHinglish ? 'Chhuta hua Cart Inquiry — 2TB Plan' : 'Abandoned Cart Inquiry',
       language: 'English',
       agent: 'Recovery Specialist',
-      value: '₹4,999',
-      status: isHinglish ? 'Recovered (₹4,999)' : 'Recovered (₹4,999)',
+      value: '₹4,249',
+      status: isHinglish ? 'Recovered (₹4,249)' : 'Recovered (₹4,249)',
       time: '12 mins ago',
     },
     {
@@ -115,8 +155,8 @@ export function ExecutiveOverview({
       intent: isHinglish ? 'Accessory Cross-Sell Suggestion' : 'Accessory Upsell Recommendation',
       language: 'Hinglish',
       agent: 'Commerce Growth Agent',
-      value: '₹1,299',
-      status: isHinglish ? 'Upsell Sent' : 'Upsell Suggested',
+      value: '₹3,149',
+      status: isHinglish ? 'Upsell Converted' : 'Upsell Converted',
       time: '25 mins ago',
     },
     {
@@ -134,7 +174,7 @@ export function ExecutiveOverview({
   return (
     <div className="space-y-6 p-6 animate-in fade-in duration-300">
       {/* Brand Hero Banner Image & Compulsory Quote */}
-      <div className="relative overflow-hidden rounded-2xl border border-purple-500/30 bg-slate-950 shadow-2xl shadow-purple-950/40 hover:border-purple-500/60 transition-all duration-300 group">
+      <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-slate-950 shadow-2xl shadow-purple-950/40 hover:border-purple-500/60 transition-all duration-300 group">
         <div className="absolute inset-0 z-0 opacity-40 mix-blend-luminosity group-hover:scale-105 transition-transform duration-700">
           <img
             src="/vyaparmind_hero_banner.jpg"
@@ -147,10 +187,14 @@ export function ExecutiveOverview({
         </div>
 
         <div className="relative z-10 p-6 md:p-8 space-y-4 bg-gradient-to-r from-[#0B0F17] via-[#0B0F17]/90 to-purple-950/60">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold border border-purple-500/40 flex items-center gap-1.5 shadow-sm">
               <Sparkles className="size-3.5 text-purple-400" />
               {isHinglish ? 'Autonomous Commerce & Business OS' : 'Autonomous Commerce Growth Engine'}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-300 text-xs font-semibold border border-blue-500/30 flex items-center gap-1">
+              <CreditCard className="size-3" />
+              Razorpay Test Mode Active
             </span>
           </div>
 
@@ -161,8 +205,8 @@ export function ExecutiveOverview({
                 : 'Turn Every Customer Conversation Into Autonomous Revenue Growth'}
             </h2>
 
-            {/* Strong Compulsory Quote */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-purple-950/40 border border-purple-800/50 backdrop-blur-sm text-slate-200 text-xs md:text-sm shadow-inner">
+            {/* Compulsory Quote */}
+            <div className="flex items-start gap-3 p-4 rounded-2xl bg-purple-950/40 border border-purple-800/50 backdrop-blur-sm text-slate-200 text-xs md:text-sm shadow-inner">
               <Quote className="size-5 text-purple-400 shrink-0 mt-0.5" />
               <p className="italic font-medium leading-relaxed">
                 {isHinglish
@@ -173,6 +217,16 @@ export function ExecutiveOverview({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
+            {onOpenJudgeDemo && (
+              <Button
+                onClick={onOpenJudgeDemo}
+                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 text-xs font-extrabold rounded-xl px-5 py-2.5 shadow-lg shadow-amber-500/20 active:scale-95 transition-all gap-1.5"
+              >
+                <Flame className="size-4 fill-slate-950 text-slate-950" />
+                Launch 14-Step Judge Demo
+              </Button>
+            )}
+
             <Button
               onClick={onOpenOpportunityCenter}
               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl px-5 py-2.5 shadow-lg shadow-purple-600/30 active:scale-95 transition-all"
@@ -184,6 +238,19 @@ export function ExecutiveOverview({
         </div>
       </div>
 
+      {/* Dataset Separation Notice */}
+      <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="size-4 text-emerald-400" />
+          <span>
+            Dataset Transparency: <strong>Demo / Simulated Baseline</strong> is separated from <strong>Razorpay Test Transactions</strong>.
+          </span>
+        </div>
+        <span suppressHydrationWarning className="text-[11px] font-mono text-purple-300">
+          Last live sync: {metricsData.lastUpdated}
+        </span>
+      </div>
+
       {/* 6 Key Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {metrics.map((m, idx) => {
@@ -191,11 +258,11 @@ export function ExecutiveOverview({
           return (
             <div
               key={idx}
-              className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-3 hover:-translate-y-1 hover:border-purple-500/40 hover:shadow-xl hover:shadow-purple-950/20 transition-all duration-300"
+              className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-3 hover:-translate-y-1 hover:border-purple-500/40 hover:shadow-xl hover:shadow-purple-950/20 transition-all duration-300"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400">{m.title}</span>
-                <div className={`p-2 rounded-lg border ${m.bg}`}>
+                <div className={`p-2 rounded-xl border ${m.bg}`}>
                   <Icon className={`size-4 ${m.color}`} />
                 </div>
               </div>
@@ -217,14 +284,16 @@ export function ExecutiveOverview({
       {/* Middle Section: Chart & Conversion Funnel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Trend Visualization */}
-        <div className="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+        <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-white">
                 {isHinglish ? 'Weekly AI Kamai Velocity' : 'AI-Influenced Revenue Velocity'}
               </h3>
               <p className="text-xs text-slate-400">
-                {isHinglish ? 'Autonomous AI voice aur chat se hui hafte var ki growth' : 'Weekly autonomous revenue growth and recovery trajectory'}
+                {isHinglish
+                  ? 'Autonomous AI voice aur chat se hui hafte var ki growth'
+                  : 'Weekly autonomous revenue growth and recovery trajectory'}
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs">
@@ -232,7 +301,7 @@ export function ExecutiveOverview({
                 <span className="size-2.5 rounded-full bg-purple-500"></span> Organic
               </span>
               <span className="flex items-center gap-1 text-slate-300">
-                <span className="size-2.5 rounded-full bg-emerald-400"></span> AI Assisted
+                <span className="size-2.5 rounded-full bg-emerald-400"></span> AI Direct & Assisted
               </span>
             </div>
           </div>
@@ -269,7 +338,7 @@ export function ExecutiveOverview({
         </div>
 
         {/* AI Recommendations Card */}
-        <div className="rounded-xl border border-purple-500/30 bg-gradient-to-b from-purple-950/30 to-slate-900/80 p-5 space-y-4">
+        <div className="rounded-2xl border border-purple-500/30 bg-gradient-to-b from-purple-950/30 to-slate-900/80 p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles className="size-4 text-purple-400" />
             <h3 className="text-sm font-semibold text-white">
@@ -277,26 +346,26 @@ export function ExecutiveOverview({
             </h3>
           </div>
           <div className="space-y-3">
-            <div className="p-3 rounded-lg border border-purple-800/40 bg-purple-950/40 text-xs space-y-1">
-              <span className="font-semibold text-purple-300">Smartphones & Accessories</span>
-              <p className="text-[11px] text-slate-300">
+            <div className="p-3.5 rounded-xl border border-purple-800/40 bg-purple-950/40 text-xs space-y-1.5">
+              <span className="font-semibold text-purple-300">Smartphones & Accessories Bundle</span>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
                 {isHinglish
-                  ? 'Sub-15k mobile demand high hai. Automatic protective case cross-sell se weekly ₹18,500 extra revenue add ho sakti hai.'
-                  : 'High demand detected for sub-₹15k phones. Triggering automated protective case upsell adds estimated ₹18,500 weekly revenue.'}
+                  ? 'Sub-15k mobile demand high hai. Automatic 67W fast charger cross-sell se weekly ₹18,500 extra revenue add ho sakti hai.'
+                  : 'High demand detected for sub-₹15k phones. Bundling 67W fast charger cross-sell adds estimated ₹18,500 weekly revenue.'}
               </p>
               <Button
                 size="sm"
                 onClick={onOpenOpportunityCenter}
-                className="mt-2 h-7 bg-purple-600 hover:bg-purple-500 text-[11px] w-full"
+                className="mt-2 h-7 bg-purple-600 hover:bg-purple-500 text-[11px] w-full rounded-lg"
               >
                 {isHinglish ? 'Action Apply Karein' : 'Apply Recommendation'}
               </Button>
             </div>
-            <div className="p-3 rounded-lg border border-slate-800 bg-slate-900/60 text-xs space-y-1">
+            <div className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 text-xs space-y-1.5">
               <span className="font-semibold text-emerald-400">Abandoned Inquiry Alert</span>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-400 leading-relaxed">
                 {isHinglish
-                  ? '14 customers checkout se exit hue. Automatic Hinglish voice follow-up active hai.'
+                  ? '14 customers checkout se exit hue. Automatic Hinglish voice follow-up active hai with 10% coupon.'
                   : '14 customers dropped off during payment terms inquiry. Triggering Hinglish voice follow-up script.'}
               </p>
             </div>
@@ -305,20 +374,22 @@ export function ExecutiveOverview({
       </div>
 
       {/* Bottom Table: Live Commerce Conversations */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-white">
               {isHinglish ? 'Live Customer Baatchaat Feed' : 'Live Conversation Intelligence'}
             </h3>
             <p className="text-xs text-slate-400">
-              {isHinglish ? 'Real-time customer intent tracking aur agent response' : 'Real-time customer intent classification and agent intervention'}
+              {isHinglish
+                ? 'Real-time customer intent tracking aur agent response'
+                : 'Real-time customer intent classification and agent intervention'}
             </p>
           </div>
           <Button
             onClick={onOpenCopilot}
             variant="outline"
-            className="text-xs border-slate-700 hover:bg-slate-800 text-slate-300"
+            className="text-xs border-slate-700 hover:bg-slate-800 text-slate-300 rounded-xl"
           >
             <MessageSquare className="size-3.5 mr-2 text-purple-400" />
             {isHinglish ? 'Live Copilot Session Join Karein' : 'Join Active Copilot Session'}

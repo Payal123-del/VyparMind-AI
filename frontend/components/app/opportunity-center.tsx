@@ -40,7 +40,7 @@ export function OpportunityCenter() {
       detectedContext: 'Customer asked: "Mujhe sub-15k phone chahiye battery aur camera performant ho". AI verified catalogue specs.',
       suggestedAction: 'Send automated Hinglish summary & instant checkout link via SMS/WhatsApp',
       recommendedProduct: 'Redmi Note 13 Pro 5G / Realme 12',
-      image: '/product_smartphone_item.jpg',
+      image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
       status: 'PENDING',
     },
     {
@@ -54,7 +54,7 @@ export function OpportunityCenter() {
       detectedContext: 'Customer inquired about 2TB annual billing discount terms but exited before payment authorization.',
       suggestedAction: 'Trigger Autonomous Recovery Agent with 10% annual coupon code',
       recommendedProduct: 'Vyapar Cloud Storage 2TB Tier',
-      image: '/product_cloud_storage.jpg',
+      image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80',
       status: 'PENDING',
     },
     {
@@ -68,7 +68,7 @@ export function OpportunityCenter() {
       detectedContext: 'Customer ordered Wireless Noise-Cancelling Headphones 2 hours ago.',
       suggestedAction: 'Recommend Hard-Shell Travel Case & Fast Charger combo',
       recommendedProduct: 'Pro Audio Noise-Cancelling Headphones',
-      image: '/product_headphones_item.jpg',
+      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
       status: 'PENDING',
     },
     {
@@ -82,7 +82,7 @@ export function OpportunityCenter() {
       detectedContext: '8 voice conversations requested 128GB stock availability in North Zone.',
       suggestedAction: 'Notify Inventory Intelligence Agent & allocate local warehouse stock',
       recommendedProduct: '5G Smartphone 128GB Variant',
-      image: '/product_smartphone_item.jpg',
+      image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80',
       status: 'PENDING',
     },
     {
@@ -96,7 +96,7 @@ export function OpportunityCenter() {
       detectedContext: 'Client hasn\'t placed a re-order in 35 days. Expressed interest in new festive catalog.',
       suggestedAction: 'Trigger Voice AI Re-engagement Call with exclusive early access catalog',
       recommendedProduct: 'Festive Enterprise Cloud Storage Vault',
-      image: '/product_cloud_storage.jpg',
+      image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80',
       status: 'PENDING',
     },
   ]);

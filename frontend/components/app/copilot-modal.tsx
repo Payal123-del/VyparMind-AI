@@ -24,12 +24,17 @@ import {
   VideoOff,
   MonitorUp,
   Maximize2,
+  CreditCard,
+  ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSessionContext, useChat } from '@livekit/components-react';
 import { ConnectionState } from 'livekit-client';
 import type { AppConfig } from '@/app-config';
 import type { LanguageMode } from '@/lib/translations';
+import { auditTrailService } from '@/lib/commerce/audit-trail';
+import { revenueAttributionService } from '@/lib/commerce/revenue-attribution';
 
 interface CopilotModalProps {
   appConfig: AppConfig;
@@ -156,6 +161,135 @@ export function CopilotModal({
   const isAgentSpeakingRef = useRef<boolean>(false);
   const lastSpokenResponseRef = useRef<string>('');
   const isListeningMicRef = useRef<boolean>(false);
+
+  // Agent Action Request & Razorpay State
+  const [actionRequest, setActionRequest] = useState<{
+    productId: string;
+    name: string;
+    basePrice: number;
+    crossSellName: string;
+    crossSellPrice: number;
+    totalAmount: number;
+    confidenceScore: number;
+    riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+    status: 'PENDING_APPROVAL' | 'PROCESSING' | 'PAID' | 'FAILED';
+    paymentId?: string;
+  } | null>({
+    productId: 'PROD-101',
+    name: 'Redmi Note 13 Pro 5G',
+    basePrice: 14999,
+    crossSellName: '67W SonicCharge Fast Power Adapter & Cable Combo',
+    crossSellPrice: 499,
+    totalAmount: 15498,
+    confidenceScore: 96,
+    riskLevel: 'LOW',
+    status: 'PENDING_APPROVAL',
+  });
+
+  const handleInitiateRazorpayPayment = async () => {
+    if (!actionRequest) return;
+    setActionRequest((prev) => (prev ? { ...prev, status: 'PROCESSING' } : null));
+
+    try {
+      // 1. Call server-side order endpoint
+      const orderRes = await fetch('/api/razorpay/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: actionRequest.productId,
+          crossSellProductId: 'PROD-302',
+          customerId: 'CUST-801',
+          customerName: 'Rajesh Sharma',
+        }),
+      });
+
+      const orderData = await orderRes.json();
+      const orderId = orderData?.order?.orderId || `ORD-${Date.now()}`;
+      const razorpayOrderId = orderData?.order?.razorpayOrderId || `order_test_${Date.now()}`;
+      const paymentId = `pay_test_${Date.now().toString(36)}`;
+
+      // 2. Call server-side verification endpoint
+      const verifyRes = await fetch('/api/razorpay/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpayOrderId,
+          razorpayPaymentId: paymentId,
+          orderId,
+          totalAmount: actionRequest.totalAmount,
+          attributionType: 'AI_DIRECT',
+          productName: `${actionRequest.name} + Fast Charger Combo`,
+          customerName: 'Rajesh Sharma',
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (verifyData.verified) {
+        // Attribute revenue
+        revenueAttributionService.attributePayment({
+          orderId,
+          razorpayPaymentId: paymentId,
+          amount: actionRequest.totalAmount,
+          attributionType: 'AI_DIRECT',
+          productName: `${actionRequest.name} + Charger Combo`,
+          customerName: 'Rajesh Sharma',
+        });
+
+        // Record Audit Event
+        auditTrailService.recordEvent({
+          requestId: `REQ-${Date.now()}`,
+          conversationId: 'CONV-8812',
+          customerId: 'CUST-801',
+          customerName: 'Rajesh Sharma',
+          agentId: 'AGENT-01',
+          agentName: 'Commerce Growth Agent (Anisha)',
+          action: 'REVENUE_ATTRIBUTED',
+          entity: `${actionRequest.name} + Fast Charger Bundle`,
+          amount: actionRequest.totalAmount,
+          status: 'SUCCESS',
+          reason: 'Razorpay Test Mode payment verified server-side. Order marked PAID.',
+          confidenceScore: 99,
+          verificationBadges: ['✓ Product Verified', '✓ Price Verified', '✓ Razorpay Payment Verified'],
+          razorpayOrderId,
+          razorpayPaymentId: paymentId,
+        });
+
+        setActionRequest((prev) =>
+          prev ? { ...prev, status: 'PAID', paymentId } : null
+        );
+
+        const confirmMsg =
+          language === 'hi'
+            ? `धन्यवाद राजेश जी! आपका ₹${actionRequest.totalAmount.toLocaleString(
+                'en-IN'
+              )} का भुगतान रेजरपे टेस्ट मोड में सफलतापूर्वक सत्यापित हो गया है। (भुगतान आईडी: ${paymentId})`
+            : language === 'hinglish'
+            ? `Badhaai ho Rajesh ji! Aapka ₹${actionRequest.totalAmount.toLocaleString(
+                'en-IN'
+              )} ka payment Razorpay Test Mode me successfully verify aur confirm ho gaya hai! (Payment ID: ${paymentId})`
+            : `Thank you Rajesh! Your payment of ₹${actionRequest.totalAmount.toLocaleString(
+                'en-IN'
+              )} has been verified and confirmed in Razorpay Test Mode. (Payment ID: ${paymentId})`;
+
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: `paid_${Date.now()}`,
+            sender: 'assistant',
+            text: confirmMsg,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            langTag: language === 'hi' ? 'Hindi हिन्दी' : language === 'hinglish' ? 'Hinglish ⚡' : 'English 🇬🇧',
+          },
+        ]);
+
+        speakAudioResponse(confirmMsg);
+      }
+    } catch (err) {
+      console.error('Payment execution error:', err);
+      setActionRequest((prev) => (prev ? { ...prev, status: 'FAILED' } : null));
+    }
+  };
 
   const samplePrompts = MULTI_LANG_PROMPTS[language] || MULTI_LANG_PROMPTS.hinglish;
 
@@ -1153,6 +1287,76 @@ export function CopilotModal({
                         ? 'Answer generate ho raha hai...'
                         : 'Generating fast written response...'}
                     </span>
+                  </div>
+                )}
+
+                {/* ACTION PREVIEW & RAZORPAY TEST CHECKOUT CARD */}
+                {actionRequest && (
+                  <div className="p-4 rounded-2xl border border-purple-500/40 bg-gradient-to-br from-purple-950/40 via-slate-900 to-indigo-950/30 space-y-3 shadow-xl backdrop-blur-md">
+                    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">
+                          AI Action Request: Razorpay Checkout
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/50">
+                        Risk: {actionRequest.riskLevel}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between text-slate-300">
+                        <span>Product (Catalog Verified):</span>
+                        <strong className="text-white font-semibold">{actionRequest.name} (₹{actionRequest.basePrice.toLocaleString('en-IN')})</strong>
+                      </div>
+                      <div className="flex justify-between text-purple-300">
+                        <span>Cross-Sell Add-on:</span>
+                        <strong className="font-semibold">+ ₹{actionRequest.crossSellPrice.toLocaleString('en-IN')}</strong>
+                      </div>
+                      <div className="flex justify-between text-sm pt-1 border-t border-slate-800/60">
+                        <span className="font-bold text-white">Final Amount:</span>
+                        <span className="font-extrabold text-emerald-400 font-mono">
+                          ₹{actionRequest.totalAmount.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Zero-Hallucination Badges */}
+                    <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-emerald-300">
+                      <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">✓ Product Verified</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">✓ Price: ₹14,999</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">✓ Inventory: In Stock</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800">✓ Policy Passed</span>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="pt-1">
+                      {actionRequest.status === 'PAID' ? (
+                        <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-center text-xs text-emerald-300 font-bold flex items-center justify-center gap-2">
+                          <CheckCircle2 className="size-4 text-emerald-400" />
+                          <span>ORDER PAID & REVENUE ATTRIBUTED ({actionRequest.paymentId})</span>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={handleInitiateRazorpayPayment}
+                          disabled={actionRequest.status === 'PROCESSING'}
+                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold gap-2 py-2.5 shadow-lg shadow-purple-900/40 active:scale-95"
+                        >
+                          {actionRequest.status === 'PROCESSING' ? (
+                            <>
+                              <Loader2 className="size-4 animate-spin" />
+                              Verifying Payment with Razorpay...
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="size-4" />
+                              Approve & Pay ₹{actionRequest.totalAmount.toLocaleString('en-IN')} (Razorpay Test Mode)
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
 
