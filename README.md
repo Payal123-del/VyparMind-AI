@@ -11,7 +11,7 @@
 
 ---
 
-## 🎯 Executive Summary & Proposition
+##  Executive Summary & Proposition
 
 VyaparMind AI is an enterprise-grade **Autonomous Revenue Growth and Agentic Commerce Platform** built for the **Razorpay Student AI Builder Buildathon (AI Growth / Agentic Commerce Track)**. 
 
@@ -20,7 +20,7 @@ $$\text{Understand Intent} \longrightarrow \text{Verify Catalog} \longrightarrow
 
 ---
 
-## 🌟 Key Capabilities
+## key Capabilities
 
 1. **AI Buyer & Merchant Growth Agent Fleet**:
    - **Merchant Growth Agent**: Detects high-intent purchase leads, ranks catalog items, offers contextual cross-sells, and calculates revenue impact.
@@ -46,7 +46,7 @@ $$\text{Understand Intent} \longrightarrow \text{Verify Catalog} \longrightarrow
 
 ---
 
-## 🏗️ Technical Architecture
+## Technical Architecture
 
 ```mermaid
 flowchart TD
@@ -93,7 +93,7 @@ flowchart TD
 
 ---
 
-## 💳 Razorpay Test Mode & Commerce Flow
+## Razorpay Test Mode & Commerce Flow
 
 ```
 Customer Input (Hinglish/English/Hindi)
@@ -127,7 +127,7 @@ Audit Trail Event Logged & Executive Overview Synchronized
 
 ---
 
-## 🛡️ Security & Policy Model
+## Security & Policy Model
 
 | Security Layer | Implementation | Protection |
 | --- | --- | --- |
@@ -140,7 +140,7 @@ Audit Trail Event Logged & Executive Overview Synchronized
 
 ---
 
-## 🎬 5-Minute Hackathon Demo Script
+## 5-Minute Hackathon Demo Script
 
 1. **Step 1 — Open Executive Overview (`0:00 - 0:45`)**:
    - Showcase **AI Revenue Command Center** metrics (*Gross Revenue*, *AI Direct Revenue*, *Recovered Revenue*, *Razorpay Test Volume*).
@@ -161,7 +161,7 @@ Audit Trail Event Logged & Executive Overview Synchronized
 
 ---
 
-## ⚡ 1-Minute Elevator Pitch
+## 1-Minute Elevator Pitch
 
 > *"E-commerce businesses lose billions every year from unassisted inquiries, abandoned checkouts, and missed cross-sells. Traditional chatbots are passive FAQ responders that cannot execute transactions safely.*
 >
@@ -171,7 +171,7 @@ Audit Trail Event Logged & Executive Overview Synchronized
 
 ---
 
-## 🚀 Quickstart & Local Setup
+## Quickstart & Local Setup
 
 ### Prerequisites
 
@@ -225,7 +225,7 @@ pnpm dlx tsx tests/agentic-commerce.test.ts
 
 ---
 
-## ☁️ Vercel Deployment
+## Vercel Deployment
 
 1. Import repository to [Vercel](https://vercel.com).
 2. Set root directory to `frontend`.
@@ -238,7 +238,7 @@ pnpm dlx tsx tests/agentic-commerce.test.ts
 
 ---
 
-## 🏆 Hackathon Track Alignment
+## Hackathon Track Alignment
 
 | Requirement | VyaparMind AI Implementation |
 | --- | --- |
@@ -249,3 +249,6 @@ pnpm dlx tsx tests/agentic-commerce.test.ts
 | **Zero-Hallucination** | Real-time catalog & inventory verification; complete refusal of unauthorized queries |
 | **Revenue Attribution** | Distinct tracking for AI Direct, Influenced, Recovered, and Upsell revenue |
 | **Judge Experience** | Interactive 14-step guided Judge Demo walkthrough and failure recovery proof |
+
+Live Link:https://vyaparmind-app.vercel.app/
+
